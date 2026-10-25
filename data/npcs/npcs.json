@@ -1,0 +1,5 @@
+{
+  "npc.merchant_01": {"id": "npc.merchant_01", "display_name": "Miriam", "role": "gardener"},
+  "npc.fisher_01": {"id": "npc.fisher_01", "display_name": "Yehudah", "role": "fisher"},
+  "npc.stall_01": {"id": "npc.stall_01", "display_name": "Hannah", "role": "merchant"}
+}

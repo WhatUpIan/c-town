@@ -1,0 +1,9 @@
+{
+  "quest.first_delivery": {
+    "id": "quest.first_delivery",
+    "giver_id": "npc.merchant_01",
+    "requirements": {"lake_fish": 2},
+    "reward": {"money": 10, "friendship_npc": "npc.merchant_01", "friendship_delta": 5},
+    "story_mode_filter": "any"
+  }
+}

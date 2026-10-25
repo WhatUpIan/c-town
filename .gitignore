@@ -1,0 +1,29 @@
+# Godot 4
+.godot/
+*.translation
+
+# Exports / local
+builds/
+*.exe
+*.pck
+*.apk
+*.zip
+logs/
+*.log
+
+# Editor / OS
+.import/
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Player saves (tests use user://test_saves/)
+# Do not commit user:// — Godot stores it outside the repo
+export_credentials.cfg
+*.secret
+.env
+.env.*

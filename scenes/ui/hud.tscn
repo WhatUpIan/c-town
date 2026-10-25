@@ -1,0 +1,45 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+
+[node name="TopRow" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TimeLabel" type="Label" parent="Margin/VBox/TopRow"]
+layout_mode = 2
+text = "06:00"
+
+[node name="DateLabel" type="Label" parent="Margin/VBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Nisan 1"
+
+[node name="WalletLabel" type="Label" parent="Margin/VBox/TopRow"]
+layout_mode = 2
+text = "20 trade units"
+
+[node name="ToolLabel" type="Label" parent="Margin/VBox/TopRow"]
+layout_mode = 2
+text = "Hand"
+
+[node name="NotifyLabel" type="Label" parent="Margin/VBox"]
+visible = false
+layout_mode = 2
+text = ""
