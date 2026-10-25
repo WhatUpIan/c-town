@@ -123,6 +123,8 @@ func _load_builtin() -> void:
 		"reason.out_of_range": "Too far away.",
 		"reason.save_invalid": "Save is invalid.",
 		"reason.schema_future": "Save schema is newer than this build.",
+		"reason.fishing_miss": "The fish slipped away — try again.",
+		"reason.fishing_cancel": "You lower the net.",
 	}
 
 func tr_key(key: String) -> String:

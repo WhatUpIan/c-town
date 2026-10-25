@@ -1,71 +1,44 @@
 extends Node2D
 
 @onready var ysort: Node2D = $YSort
-@onready var ground: Node2D = $Ground
+@onready var ground_layer: TileMapLayer = $GroundLayer
 @onready var player: CharacterBody2D = $YSort/Player
 @onready var interact_prompt: Label = $UILayer/InteractPrompt
 
 var _interactables: Array = []
 var _current_target: Node = null
 const INTERACT_RANGE_PX := 64.0
+const MAP_ORIGIN := Vector2(400, 60)
 
 func _ready() -> void:
-	_build_placeholder_ground()
+	_build_tilemap_ground()
 	_spawn_props()
 	_spawn_villagers()
 	if player and player.has_method("sync_from_state"):
 		player.sync_from_state()
 	_refresh_interactables()
 
-func _build_placeholder_ground() -> void:
-	# Diamond tiles via sprites for Compatibility simplicity (TileMapLayer optional)
-	var earth := load("res://assets/placeholders/ground_earth.png")
-	var path := load("res://assets/placeholders/ground_path.png")
-	var soil := load("res://assets/placeholders/ground_soil.png")
-	var water := load("res://assets/placeholders/ground_water.png")
-	for x in range(0, 22):
-		for y in range(0, 16):
-			var spr := Sprite2D.new()
-			spr.centered = true
-			var cell := Vector2i(x, y)
-			spr.position = IsoMath.cell_to_screen(cell) + Vector2(400, 60)
-			var is_water := x >= 18
-			var is_path := (y == 6 and x < 18) or (x == 10 and y < 10)
-			var is_soil := x >= 6 and x <= 8 and y >= 8 and y <= 9
-			if is_water:
-				spr.texture = water
-			elif is_soil:
-				spr.texture = soil
-			elif is_path:
-				spr.texture = path
-			else:
-				spr.texture = earth
-			ground.add_child(spr)
-			if is_water:
-				var body := StaticBody2D.new()
-				body.position = spr.position
-				var cs := CollisionShape2D.new()
-				var shape := RectangleShape2D.new()
-				shape.size = Vector2(40, 20)
-				cs.shape = shape
-				body.add_child(cs)
-				body.collision_layer = 1
-				add_child(body)
+func _build_tilemap_ground() -> void:
+	ground_layer.position = MAP_ORIGIN
+	ground_layer.tile_set = GroundBuilder.build_tileset()
+	GroundBuilder.fill_village(ground_layer)
+	GroundBuilder.add_water_collision(self, ground_layer)
+
+func _cell_world(cell: Vector2i) -> Vector2:
+	return GroundBuilder.cell_world_pos(ground_layer, cell)
 
 func _spawn_props() -> void:
 	_add_building(Vector2(220, 150), "res://assets/placeholders/house_basalt.png", "Home")
 	_add_building(Vector2(300, 100), "res://assets/placeholders/synagogue_modest.png", "Synagogue")
 	_add_interactable(Vector2(250, 200), "interact.bed", "Sleep", "res://assets/placeholders/prop_bed.png")
 	_add_interactable(Vector2(340, 120), "interact.stall", "Stall", "res://assets/placeholders/prop_stall.png")
-	# Walkable shoreline (cell x=17 is last non-water column); keep clear of NPC work anchors
-	var fish_pos := IsoMath.cell_to_screen(Vector2i(17, 8)) + Vector2(400, 60)
-	_add_interactable(fish_pos, "interact.fishing", "Fish", "res://assets/placeholders/prop_fishing.png")
+	# Walkable shoreline (cell x=17 is last non-water column)
+	_add_interactable(_cell_world(Vector2i(17, 8)), "interact.fishing", "Fish", "res://assets/placeholders/prop_fishing.png")
 	# Plots
 	for i in range(6):
 		var pid := "plot.home_%02d" % (i + 1)
 		var cell := Vector2i(6 + (i % 3), 8 + int(i / 3))
-		var pos := IsoMath.cell_to_screen(cell) + Vector2(400, 60)
-		_add_plot(pos, pid)
+		_add_plot(_cell_world(cell), pid)
 
 func _add_building(pos: Vector2, tex_path: String, label_text: String) -> void:
 	var n := Node2D.new()
@@ -270,15 +243,11 @@ func _do_interact(sid: String) -> void:
 	if sid == "":
 		return
 	if sid == "interact.fishing":
-		GameSession.set_modal_pause(true)
-		# Simple auto-resolve fishing mini for prototype (marker always valid when interacting)
-		var cmd := GameCommand.make("fish", "player.local", sid, {})
-		var res: CommandResult = GameSession.execute(cmd)
-		GameSession.set_modal_pause(false)
-		if res.ok:
-			GameSession.notification.emit("Caught a lake fish.")
+		var ui_fish := _main_ui()
+		if ui_fish and ui_fish.has_method("open_fishing"):
+			ui_fish.open_fishing()
 		else:
-			GameSession.notification.emit(GameSession.tr_reason(res.reason_code))
+			GameSession.notification.emit("Fishing UI unavailable.")
 		return
 	if sid == "interact.stall":
 		var ui := _main_ui()

@@ -7,6 +7,7 @@ extends CanvasLayer
 @onready var journal: Control = $JournalPanel
 @onready var dialogue: Control = $DialoguePanel
 @onready var stall: Control = $StallPanel
+@onready var fishing: Control = $FishingMinigame
 @onready var hud: CanvasLayer = $HUD
 @onready var village_host: Node = get_parent().get_node_or_null("VillageHost")
 
@@ -28,6 +29,7 @@ func _ready() -> void:
 	pause_menu.settings_pressed.connect(func(): settings.open_panel())
 	pause_menu.title_pressed.connect(_to_title)
 	dialogue.open_stall_requested.connect(open_stall)
+	fishing.finished.connect(_on_fishing_finished)
 	GameSession.mode_changed.connect(_on_mode)
 
 func _on_mode(playing: bool) -> void:
@@ -81,7 +83,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not hud.visible:
 		return
 	if event.is_action_pressed("pause"):
-		if dialogue.visible or stall.visible or inventory.visible or journal.visible or settings.visible:
+		if dialogue.visible or stall.visible or inventory.visible or journal.visible or settings.visible or fishing.visible:
 			return
 		if pause_menu.visible:
 			pause_menu.close_menu()
@@ -89,12 +91,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			pause_menu.open_menu()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("inventory"):
+		if fishing.visible:
+			return
 		if inventory.visible:
 			inventory.close()
 		else:
 			inventory.open_panel()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("journal"):
+		if fishing.visible:
+			return
 		if journal.visible:
 			journal.close()
 		else:
@@ -106,3 +112,19 @@ func open_dialogue(npc_id: String) -> void:
 
 func open_stall() -> void:
 	stall.open_panel()
+
+func open_fishing() -> void:
+	fishing.open_minigame()
+
+func _on_fishing_finished(success: bool, canceled: bool) -> void:
+	if canceled:
+		var cancel_cmd := GameCommand.make("fish", "player.local", "interact.fishing", {"cancel": true})
+		GameSession.execute(cancel_cmd)
+		GameSession.notification.emit("You lower the net.")
+		return
+	var cmd := GameCommand.make("fish", "player.local", "interact.fishing", {"success": success})
+	var res: CommandResult = GameSession.execute(cmd)
+	if res.ok:
+		GameSession.notification.emit("Caught a lake fish.")
+	else:
+		GameSession.notification.emit(GameSession.tr_reason(res.reason_code))

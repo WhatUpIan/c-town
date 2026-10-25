@@ -71,3 +71,13 @@ Details: `docs/export_windows.md`. Preset: `export_presets.cfg`.
 
 - Smoke: `docs/media/smoke-title.webp`, `docs/media/smoke-village.webp`
 - Playtest store copies: `media/playtest-a03-a25/` (Project store)
+
+
+## CG-5 vertical polish
+
+| Item | Status |
+|---|---|
+| TileMapLayer ground | Implemented (`GroundBuilder` + `GroundLayer`) |
+| Fishing timing UI | Implemented (`scenes/ui/fishing_minigame.tscn`) |
+| Automated suite | 79 passed / 0 failed after change |
+| Manual fishing band | Owner should verify locally after pull |
